@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commande Tacos</title>
+</head>
+<body>
+    <!-- Formulaire de commande -->
+    <form id="commandeForm">
+        <fieldset>
+            <legend>Taille</legend>
+            <label><input type="radio" name="taille" value="M" required> M</label>
+            <label><input type="radio" name="taille" value="L"> L</label>
+            <label><input type="radio" name="taille" value="XL"> XL</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Viande</legend>
+            <label><input type="radio" name="viande" value="Poulet" required> Poulet</label>
+            <label><input type="radio" name="viande" value="Boeuf"> Boeuf</label>
+            <label><input type="radio" name="viande" value="Végétarien"> Végétarien</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Garnitures</legend>
+            <label><input type="checkbox" name="garniture" value="Frites"> Frites</label>
+            <label><input type="checkbox" name="garniture" value="Salade"> Salade</label>
+            <label><input type="checkbox" name="garniture" value="Tomates"> Tomates</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Sauce</legend>
+            <label><input type="radio" name="sauce" value="Ketchup" required> Ketchup</label>
+            <label><input type="radio" name="sauce" value="Mayonnaise"> Mayonnaise</label>
+            <label><input type="radio" name="sauce" value="Blanche"> Blanche</label>
+        </fieldset>
+
+        <button type="button" id="submitBtn">Envoyer</button>
+    </form>
+
+    <script type="module">
+        // Importer les SDK Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+        // Configuration de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcIlUeHMF78slyxmCB46FJo9UFNhEXCiI",
+            authDomain: "commande-tacos.firebaseapp.com",
+            databaseURL: "https://commande-tacos-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "commande-tacos",
+            storageBucket: "commande-tacos.firebasestorage.app",
+            messagingSenderId: "236767585507",
+            appId: "1:236767585507:web:553b02037a3b2136ded1d6"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Fonction pour envoyer la commande
+        function envoyerCommande() {
+            // Récupérer les valeurs sélectionnées dans le formulaire
+            const taille = document.querySelector('input[name="taille"]:checked');
+            const viande = document.querySelector('input[name="viande"]:checked');
+            const garniture = Array.from(document.querySelectorAll('input[name="garniture"]:checked')).map(e => e.value);
+            const sauce = document.querySelector('input[name="sauce"]:checked');
+
+            // Vérifier que toutes les options nécessaires sont sélectionnées
+            if (!taille || !viande || !sauce) {
+                alert("Veuillez sélectionner tous les champs obligatoires.");
+                return;
+            }
+
+            const commande = {
+                taille: taille.value,
+                viande: viande.value,
+                garniture: garniture,
+                sauce: sauce.value,
+                timestamp: new Date().toISOString()
+            };
+
+            // Ajouter la commande dans la base de données Firebase
+            const commandesRef = ref(database, 'commandes');
+            push(commandesRef, commande)
+                .then(() => alert("Commande envoyée avec succès !"))
+                .catch(error => {
+                    console.error("Erreur :", error);
+                    alert("Erreur lors de l'envoi de la commande.");
+                });
+        }
+
+        // Attacher l'événement au bouton une fois que la page est chargée
+        document.getElementById("submitBtn").addEventListener("click", envoyerCommande);
+
+        // Vérification si Firebase est bien initialisé
+        console.log("Firebase initialisé :", app);
+    </script>
+</body>
+</html>
